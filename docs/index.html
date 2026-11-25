@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Pending Bids — Sharma Electric &amp; HVAC</title>
+<style>
+:root{
+  --navy:#264387; --dnavy:#1a2f61; --gold:#F0A846; --ink:#1d2433; --gray:#5b6478;
+  --line:#dfe4ee; --page:#f4f6fb; --card:#ffffff;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html{font-size:18px;}
+body{margin:0; font-family:-apple-system,"Segoe UI",Inter,Roboto,Arial,sans-serif; background:var(--page); color:var(--ink);}
+h1,h2,h3{font-family:"Barlow Semi Condensed",-apple-system,"Segoe UI",Arial,sans-serif; margin:0;}
+button{font-family:inherit; cursor:pointer;}
+/* ---------- header ---------- */
+header{background:var(--dnavy); color:#fff; padding:14px 16px; position:sticky; top:0; z-index:20;}
+header .row{display:flex; align-items:center; gap:10px; max-width:900px; margin:0 auto;}
+header .brand{font-family:"Barlow Semi Condensed",Arial,sans-serif; font-size:1.45rem; font-weight:700; letter-spacing:.5px;}
+header .brand span{color:var(--gold);}
+header .sub{font-size:.78rem; color:#c9d4ee; margin-top:1px;}
+header .sp{flex:1;}
+.hbtn{background:var(--navy); color:#fff; border:1px solid #4763a3; border-radius:10px; padding:10px 14px; font-size:.9rem; min-height:44px;}
+/* ---------- layout ---------- */
+main{max-width:900px; margin:0 auto; padding:16px 14px 40px;}
+.secttl{font-size:1.3rem; font-weight:700; color:var(--dnavy); margin:22px 2px 10px;}
+.secttl:first-child{margin-top:4px;}
+/* ---------- lock ---------- */
+#lock{max-width:420px; margin:8vh auto 0; background:var(--card); border:1px solid var(--line); border-radius:16px; padding:28px 22px; text-align:center;}
+#lock h1{color:var(--dnavy); font-size:1.7rem;}
+#lock p{color:var(--gray); font-size:.95rem;}
+#pin{width:100%; font-size:1.6rem; text-align:center; letter-spacing:8px; padding:14px; border:2px solid var(--line); border-radius:12px; margin:14px 0;}
+#pin:focus{outline:none; border-color:var(--navy);}
+.bigbtn{display:block; width:100%; background:var(--navy); color:#fff; border:none; border-radius:12px; padding:16px; font-size:1.1rem; font-weight:600; min-height:56px;}
+.bigbtn:active{background:var(--dnavy);}
+#lockerr{color:#b3261e; min-height:1.2em; font-size:.9rem; margin-top:10px;}
+/* ---------- cards ---------- */
+.card{display:block; width:100%; text-align:left; background:var(--card); border:1px solid var(--line); border-left:6px solid var(--gold); border-radius:14px; padding:16px; margin:0 0 12px; }
+.card h3{font-size:1.35rem; color:var(--dnavy); line-height:1.15;}
+.card .addr{color:var(--gray); font-size:.92rem; margin:2px 0 10px;}
+.minis{display:flex; flex-wrap:wrap; gap:8px;}
+.mini{background:var(--page); border:1px solid var(--line); border-radius:10px; padding:7px 11px; font-size:.88rem;}
+.mini b{color:var(--dnavy); font-size:1.02rem;}
+.badge{display:inline-block; background:var(--gold); color:#231a04; font-weight:700; font-size:.75rem; border-radius:6px; padding:3px 8px; vertical-align:middle; margin-left:8px;}
+.stage{margin-top:10px; font-size:.9rem; color:var(--ink);}
+.stage b{color:var(--navy);}
+/* ---------- clients ---------- */
+.client{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px; margin:0 0 12px;}
+.client h3{font-size:1.25rem; color:var(--dnavy);}
+.client .vol{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;}
+/* ---------- detail ---------- */
+#backbtn{background:none; border:none; color:var(--navy); font-size:1.05rem; font-weight:600; padding:10px 4px; min-height:44px;}
+.tiles{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:12px 0;}
+@media(min-width:640px){.tiles{grid-template-columns:1fr 1fr 1fr;}}
+.tile{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px; text-align:center;}
+.tile .n{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:1.9rem; font-weight:700; color:var(--dnavy); line-height:1.1;}
+.tile .l{font-size:.85rem; color:var(--gray); text-transform:uppercase; letter-spacing:.6px; margin-top:2px;}
+.panel{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px; margin:0 0 12px;}
+.panel h3{color:var(--dnavy); font-size:1.2rem; margin-bottom:8px;}
+table{width:100%; border-collapse:collapse; font-size:.98rem;}
+td{padding:7px 4px; border-bottom:1px solid var(--line);}
+td:last-child{text-align:right; font-family:"IBM Plex Mono",ui-monospace,monospace; font-weight:600; color:var(--dnavy); white-space:nowrap;}
+tr:last-child td{border-bottom:none;}
+.note{font-size:.9rem; color:var(--gray); margin-top:8px;}
+ul.clean{margin:6px 0; padding-left:20px;}
+ul.clean li{margin:5px 0;}
+.sheetimg{width:100%; border:1px solid var(--line); border-radius:10px; margin:6px 0 4px; background:#fff;}
+.sheetlbl{font-weight:600; color:var(--dnavy); font-size:.95rem; margin-top:12px;}
+.exportbtn{background:var(--gold); color:#231a04; border:none; border-radius:12px; width:100%; padding:16px; font-size:1.12rem; font-weight:700; min-height:58px; margin:6px 0 14px;}
+footer{color:var(--gray); font-size:.8rem; text-align:center; padding:18px 10px 30px;}
+/* ---------- image overlay ---------- */
+#ovl{position:fixed; inset:0; background:rgba(10,14,24,.96); z-index:50; display:none; overflow:auto;}
+#ovl img{width:100%;}
+#ovl .x{position:fixed; top:10px; right:10px; background:var(--gold); border:none; border-radius:10px; padding:12px 18px; font-size:1rem; font-weight:700;}
+/* ---------- print (bid sheet) ---------- */
+#printarea{display:none;}
+@media print{
+  body{background:#fff;}
+  header, main, footer, #ovl{display:none !important;}
+  #printarea{display:block !important; color:#000; font-size:12pt;}
+  #printarea .phead{border-bottom:3px solid var(--navy); padding-bottom:8px; margin-bottom:12px;}
+  #printarea .phead .co{font-family:"Barlow Semi Condensed",Arial,sans-serif; font-size:22pt; font-weight:700; color:var(--navy);}
+  #printarea .phead .lic{font-size:10pt; color:#333;}
+  #printarea h2{font-size:16pt; color:var(--navy); margin:14px 0 6px;}
+  #printarea table td:last-child{color:#000;}
+  #printarea .drawpage{page-break-before:always;}
+  #printarea .drawpage img{width:100%;}
+  @page{margin:14mm;}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="row">
+    <div>
+      <div class="brand">PENDING <span>BIDS</span></div>
+      <div class="sub">Sharma Electric &amp; HVAC · Takeoff bid sheets</div>
+    </div>
+    <div class="sp"></div>
+    <button class="hbtn" id="refreshbtn" title="Refresh">⟳ Refresh</button>
+    <button class="hbtn" id="lockbtn" style="display:none">Lock</button>
+  </div>
+</header>
+
+<main>
+  <!-- LOCK -->
+  <div id="lock">
+    <h1>Pending Bids</h1>
+    <p>Enter the Sharma app code to open the bid sheets.</p>
+    <input id="pin" type="password" inputmode="numeric" autocomplete="off" placeholder="••••">
+    <button class="bigbtn" id="unlockbtn">Open</button>
+    <div id="lockerr"></div>
+  </div>
+
+  <!-- LIST -->
+  <div id="listview" style="display:none">
+    <div class="secttl">Pending bids</div>
+    <div id="joblist"></div>
+    <div class="secttl">Clients &amp; volume of work</div>
+    <div id="clientlist"></div>
+  </div>
+
+  <!-- DETAIL -->
+  <div id="detailview" style="display:none">
+    <button id="backbtn">‹ All pending bids</button>
+    <div id="detailbody"></div>
+  </div>
+</main>
+
+<footer>Sharma Electric &amp; HVAC · Lic. EC13013924 · CAC1823596</footer>
+
+<div id="ovl"><button class="x" id="ovlx">Close ✕</button><img id="ovlimg" alt="Drawing sheet"></div>
+<div id="printarea"></div>
+
+<script>
+"use strict";
+let DATA = null, CURRENT = null;
+const $ = id => document.getElementById(id);
+
+async function deriveKey(code, saltB64, iterations){
+  const enc = new TextEncoder();
+  const base = await crypto.subtle.importKey("raw", enc.encode(code), "PBKDF2", false, ["deriveKey"]);
+  const salt = Uint8Array.from(atob(saltB64), c => c.charCodeAt(0));
+  return crypto.subtle.deriveKey({name:"PBKDF2", salt, iterations, hash:"SHA-256"}, base,
+    {name:"AES-GCM", length:256}, false, ["decrypt"]);
+}
+async function unlock(code){
+  const res = await fetch("data.enc.json", {cache:"no-store"});
+  const env = await res.json();
+  const key = await deriveKey(code, env.salt, env.iterations);
+  const iv = Uint8Array.from(atob(env.iv), c => c.charCodeAt(0));
+  const ct = Uint8Array.from(atob(env.ciphertext), c => c.charCodeAt(0));
+  const pt = await crypto.subtle.decrypt({name:"AES-GCM", iv}, key, ct);
+  return JSON.parse(new TextDecoder().decode(pt));
+}
+$("unlockbtn").addEventListener("click", async () => {
+  const code = $("pin").value.trim();
+  $("lockerr").textContent = "";
+  try{
+    DATA = await unlock(code);
+    sessionStorage.setItem("pb_code", code);
+    showList();
+  }catch(e){
+    $("lockerr").textContent = "That code didn't open it — try again.";
+  }
+});
+$("pin").addEventListener("keydown", e => { if(e.key === "Enter") $("unlockbtn").click(); });
+$("refreshbtn").addEventListener("click", () => location.reload());
+$("lockbtn").addEventListener("click", () => { sessionStorage.removeItem("pb_code"); location.reload(); });
+
+function fmt(n){ return typeof n === "number" ? n.toLocaleString("en-US") : n; }
+function showList(){
+  $("lock").style.display = "none";
+  $("detailview").style.display = "none";
+  $("listview").style.display = "block";
+  $("lockbtn").style.display = "block";
+  const jl = $("joblist"); jl.innerHTML = "";
+  DATA.jobs.forEach((j, i) => {
+    const b = document.createElement("button");
+    b.className = "card";
+    b.innerHTML = `<h3>${j.project}<span class="badge">${j.status.toUpperCase()}</span></h3>
+      <div class="addr">${j.address} · ${j.client}</div>
+      <div class="minis">
+        <div class="mini"><b>${j.sf}</b> SF</div>
+        <div class="mini"><b>${j.service}</b> service</div>
+        <div class="mini"><b>${fmt(j.lights)}</b> lights</div>
+        <div class="mini"><b>${fmt(j.outlets)}</b> outlets</div>
+        <div class="mini"><b>${j.switches}</b> switches</div>
+      </div>
+      <div class="stage"><b>Stage:</b> ${j.stage}</div>`;
+    b.addEventListener("click", () => showJob(i));
+    jl.appendChild(b);
+  });
+  // Clients & volume
+  const byClient = {};
+  DATA.jobs.forEach(j => {
+    const c = byClient[j.client] = byClient[j.client] || {jobs:0, sf:0, lights:0, outlets:0, contact:j.contact, names:[]};
+    c.jobs++; c.sf += parseInt(String(j.sf).replace(/[^0-9]/g,""), 10) || 0;
+    c.lights += j.lights || 0; c.outlets += j.outlets || 0; c.names.push(j.project);
+  });
+  const cl = $("clientlist"); cl.innerHTML = "";
+  Object.keys(byClient).forEach(name => {
+    const c = byClient[name];
+    const d = document.createElement("div");
+    d.className = "client";
+    d.innerHTML = `<h3>${name}</h3><div class="addr" style="color:var(--gray);font-size:.92rem">${c.contact}</div>
+      <div class="vol">
+        <div class="mini"><b>${c.jobs}</b> pending bid${c.jobs>1?"s":""}</div>
+        <div class="mini"><b>${c.sf.toLocaleString("en-US")}</b> total SF</div>
+        <div class="mini"><b>${c.lights.toLocaleString("en-US")}</b> lights</div>
+        <div class="mini"><b>${c.outlets.toLocaleString("en-US")}</b> outlets</div>
+      </div>
+      <div class="note">${c.names.join(" · ")}</div>`;
+    cl.appendChild(d);
+  });
+}
+function rowsHTML(pairs){
+  return "<table>" + pairs.map(p => `<tr><td>${p[0]}</td><td>${p[1]}</td></tr>`).join("") + "</table>";
+}
+function showJob(i){
+  const j = DATA.jobs[i]; CURRENT = j;
+  $("listview").style.display = "none";
+  $("detailview").style.display = "block";
+  window.scrollTo(0,0);
+  const spec = j.specialty.map(s => [s[0], s[1]]);
+  $("detailbody").innerHTML = `
+    <h2 style="font-size:1.8rem;color:var(--dnavy)">${j.project}<span class="badge">${j.status.toUpperCase()}</span></h2>
+    <div style="color:var(--gray)">${j.address}</div>
+    <div style="margin-top:4px"><b>Client:</b> ${j.client}<br><b>Contact:</b> ${j.contact}<br><b>Permit:</b> ${j.permit}<br><b>Takeoff:</b> ${j.takeoff_date} · <b>Stage:</b> ${j.stage}</div>
+    <div class="tiles">
+      <div class="tile"><div class="n">${j.sf}</div><div class="l">Sq Footage</div></div>
+      <div class="tile"><div class="n">${j.service}</div><div class="l">Service Size</div></div>
+      <div class="tile"><div class="n">${fmt(j.lights)}</div><div class="l">Lights</div></div>
+      <div class="tile"><div class="n">${fmt(j.outlets)}</div><div class="l">Outlets</div></div>
+      <div class="tile"><div class="n">${j.switches}</div><div class="l">Switches</div></div>
+      <div class="tile"><div class="n">${j.dimmers}</div><div class="l">Dimmers</div></div>
+    </div>
+    <button class="exportbtn" id="exportbtn">⬇ Export PDF bid sheet</button>
+    <div class="panel"><h3>Lights — breakdown</h3>${rowsHTML(j.lights_breakdown)}</div>
+    <div class="panel"><h3>Outlets — breakdown</h3>${rowsHTML(j.outlets_breakdown)}${j.outlets_note?`<div class="note">${j.outlets_note}</div>`:""}</div>
+    <div class="panel"><h3>Specialty items</h3>${rowsHTML(spec)}
+      <div class="note"><b>Circuits:</b> ${j.circuits}<br><b>Labor:</b> ${j.labor}</div></div>
+    <div class="panel"><h3>Good to know</h3>
+      <div class="note" style="margin-top:0"><b>Square footage:</b> ${j.sf_note}</div>
+      <div class="note"><b>Service:</b> ${j.service_note}</div>
+      <div class="note"><b>Switches:</b> ${j.switches_note} <b>Dimmers:</b> ${j.dimmers_note}</div>
+      <ul class="clean">${j.notes.map(n => `<li>${n}</li>`).join("")}</ul></div>
+    <div class="panel"><h3>Open questions (${j.open_questions.length})</h3>
+      <ul class="clean">${j.open_questions.map(q => `<li>${q}</li>`).join("")}</ul></div>
+    <div class="panel"><h3>Drawings</h3><div id="sheetbox"></div></div>`;
+  const sb = $("sheetbox");
+  j.sheets.forEach(s => {
+    const lbl = document.createElement("div"); lbl.className = "sheetlbl"; lbl.textContent = s.label;
+    const img = document.createElement("img"); img.className = "sheetimg"; img.src = s.img; img.alt = s.label;
+    img.addEventListener("click", () => { $("ovlimg").src = s.img; $("ovl").style.display = "block"; });
+    sb.appendChild(lbl); sb.appendChild(img);
+  });
+  $("exportbtn").addEventListener("click", () => exportPDF(j));
+}
+$("backbtn").addEventListener("click", showList);
+$("ovlx").addEventListener("click", () => { $("ovl").style.display = "none"; });
+
+function exportPDF(j){
+  const pa = $("printarea");
+  pa.innerHTML = `
+    <div class="phead">
+      <div class="co">SHARMA ELECTRIC &amp; HVAC</div>
+      <div class="lic">Lic. EC13013924 · CAC1823596 · POWER – COMFORT – TRUST</div>
+    </div>
+    <h2 style="margin-top:2px">BID SHEET — ${j.project}</h2>
+    <div>${j.address}<br><b>Client:</b> ${j.client} · <b>Contact:</b> ${j.contact}<br>
+    <b>Permit:</b> ${j.permit} · <b>Trade:</b> ${j.trade} · <b>Status:</b> ${j.status} · <b>Takeoff date:</b> ${j.takeoff_date}</div>
+    <h2>Key numbers</h2>
+    ${rowsHTML([["Square footage (conditioned)", j.sf + " SF"],["Service size", j.service],["Lights", fmt(j.lights)],["Outlets", fmt(j.outlets)],["Switches", j.switches],["Dimmers", j.dimmers],["Circuits", j.circuits],["Labor", j.labor]])}
+    <div style="font-size:10pt;color:#333;margin-top:6px">${j.sf_note} ${j.service_note}</div>
+    <h2>Lights — breakdown</h2>${rowsHTML(j.lights_breakdown)}
+    <h2>Outlets — breakdown</h2>${rowsHTML(j.outlets_breakdown)}
+    <h2>Specialty items</h2>${rowsHTML(j.specialty)}
+    <h2>Notes</h2><ul>${j.notes.map(n => `<li>${n}</li>`).join("")}</ul>
+    <h2>Open questions</h2><ul>${j.open_questions.map(q => `<li>${q}</li>`).join("")}</ul>
+    ${j.sheets.map(s => `<div class="drawpage"><h2>${s.label}</h2><img src="${s.img}"></div>`).join("")}
+    <div style="margin-top:16px;font-size:10pt;color:#333">First-pass takeoff — counts from the approved plan set listed above. No prices on this sheet.</div>`;
+  window.print();
+}
+// auto-open if code already entered this session
+(async () => {
+  const saved = sessionStorage.getItem("pb_code");
+  if(saved){
+    try{ DATA = await unlock(saved); showList(); }
+    catch(e){ sessionStorage.removeItem("pb_code"); }
+  }
+})();
+</script>
+</body>
+</html>
