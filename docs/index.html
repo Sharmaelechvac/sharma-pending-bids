@@ -247,6 +247,8 @@ function showJob(i){
       <div class="tile"><div class="n">${j.appliances}</div><div class="l">Appliances</div></div>
     </div>
     <button class="exportbtn" id="exportbtn">⬇ Export PDF bid sheet</button>
+    <div class="panel" style="border-left:6px solid var(--gold)"><h3>Special notes — for bidding</h3>
+      <ul class="clean">${(j.special_notes||[]).map(n => `<li>${n}</li>`).join("")}</ul></div>
     <div class="panel"><h3>Lights — breakdown</h3>${rowsHTML(j.lights_breakdown)}</div>
     <div class="panel"><h3>Outlets — breakdown</h3>${rowsHTML(j.outlets_breakdown)}${j.outlets_note?`<div class="note">${j.outlets_note}</div>`:""}</div>
     <div class="panel"><h3>Appliances (${j.appliances})</h3>${rowsHTML(j.appliances_list)}</div>
@@ -289,6 +291,7 @@ function exportPDF(j){
     <h2>Key numbers</h2>
     ${rowsHTML([["Living square footage", j.sf_living + " SF"],["Under roof square footage", j.sf_roof + " SF"],["Stories", j.stories],["Service size", j.service],["Lights", fmt(j.lights)],["Outlets", fmt(j.outlets)],["Switches", j.switches],["Dimmers", j.dimmers],["Appliances", j.appliances],["Circuits", j.circuits],["Labor", j.labor]])}
     <div style="font-size:10pt;color:#333;margin-top:6px">${j.sf_note} ${j.service_note}</div>
+    <h2>Special notes — for bidding</h2><ul>${(j.special_notes||[]).map(n => `<li>${n}</li>`).join("")}</ul>
     <h2>Appliances</h2>${rowsHTML(j.appliances_list)}
     <h2>Lights — breakdown</h2>${rowsHTML(j.lights_breakdown)}
     <h2>Outlets — breakdown</h2>${rowsHTML(j.outlets_breakdown)}
