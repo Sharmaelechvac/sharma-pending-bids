@@ -20,6 +20,10 @@ header .row{display:flex; align-items:center; gap:10px; max-width:900px; margin:
 header .brand{font-family:"Barlow Semi Condensed",Arial,sans-serif; font-size:1.45rem; font-weight:700; letter-spacing:.5px;}
 header .brand span{color:var(--gold);}
 header .sub{font-size:.78rem; color:#c9d4ee; margin-top:1px;}
+.logochip{background:#fff; border-radius:10px; padding:5px 9px; display:flex; align-items:center; flex:none;}
+.logochip img{height:40px; width:auto; display:block;}
+.clientlogo{height:52px; width:auto; border:1px solid var(--line); border-radius:10px; background:#fff; padding:4px;}
+.joblogo{display:flex; align-items:center; gap:12px; margin:10px 0 2px;}
 header .sp{flex:1;}
 .hbtn{background:var(--navy); color:#fff; border:1px solid #4763a3; border-radius:10px; padding:10px 14px; font-size:.9rem; min-height:44px;}
 /* ---------- layout ---------- */
@@ -93,6 +97,7 @@ footer{color:var(--gray); font-size:.8rem; text-align:center; padding:18px 10px 
 <body>
 <header>
   <div class="row">
+    <div class="logochip"><img src="assets/sharma360-logo.png" alt="SHARMA360"></div>
     <div>
       <div class="brand">PENDING <span>BIDS</span></div>
       <div class="sub">Sharma Electric &amp; HVAC · Takeoff bid sheets</div>
@@ -196,7 +201,7 @@ function showList(){
   // Clients & volume
   const byClient = {};
   DATA.jobs.forEach(j => {
-    const c = byClient[j.client] = byClient[j.client] || {jobs:0, sf:0, lights:0, outlets:0, contact:j.contact, names:[]};
+    const c = byClient[j.client] = byClient[j.client] || {jobs:0, sf:0, lights:0, outlets:0, contact:j.contact, names:[], logo:j.client_logo || ""};
     c.jobs++; c.sf += parseInt(String(j.sf_living).replace(/[^0-9]/g,""), 10) || 0;
     c.lights += j.lights || 0; c.outlets += j.outlets || 0; c.names.push(j.project);
   });
@@ -205,7 +210,7 @@ function showList(){
     const c = byClient[name];
     const d = document.createElement("div");
     d.className = "client";
-    d.innerHTML = `<h3>${name}</h3><div class="addr" style="color:var(--gray);font-size:.92rem">${c.contact}</div>
+    d.innerHTML = `${c.logo?`<img class="clientlogo" src="${c.logo}" alt="${name} logo" style="margin-bottom:8px">`:""}<h3>${name}</h3><div class="addr" style="color:var(--gray);font-size:.92rem">${c.contact}</div>
       <div class="vol">
         <div class="mini"><b>${c.jobs}</b> pending bid${c.jobs>1?"s":""}</div>
         <div class="mini"><b>${c.sf.toLocaleString("en-US")}</b> total SF</div>
@@ -228,6 +233,7 @@ function showJob(i){
   $("detailbody").innerHTML = `
     <h2 style="font-size:1.8rem;color:var(--dnavy)">${j.project}<span class="badge">${j.status.toUpperCase()}</span></h2>
     <div style="color:var(--gray)">${j.address}</div>
+    ${j.client_logo?`<div class="joblogo"><img class="clientlogo" src="${j.client_logo}" alt="${j.client} logo"><div><b>${j.client}</b><br><span style="color:var(--gray);font-size:.9rem">Builder / client</span></div></div>`:""}
     <div style="margin-top:4px"><b>Client:</b> ${j.client}<br><b>Contact:</b> ${j.contact}<br><b>Permit:</b> ${j.permit}<br><b>Takeoff:</b> ${j.takeoff_date} · <b>Stage:</b> ${j.stage}</div>
     <div class="tiles">
       <div class="tile"><div class="n">${j.sf_living}</div><div class="l">Living SF</div></div>
@@ -270,7 +276,11 @@ function exportPDF(j){
   const pa = $("printarea");
   pa.innerHTML = `
     <div class="phead">
-      <div class="co">SHARMA ELECTRIC &amp; HVAC</div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <img src="assets/sharma360-logo.png" style="height:52px" alt="SHARMA360">
+        ${j.client_logo?`<img src="${j.client_logo}" style="height:64px" alt="Client logo">`:""}
+      </div>
+      <div class="co" style="margin-top:8px">SHARMA ELECTRIC &amp; HVAC</div>
       <div class="lic">Lic. EC13013924 · CAC1823596 · POWER – COMFORT – TRUST</div>
     </div>
     <h2 style="margin-top:2px">BID SHEET — ${j.project}</h2>
