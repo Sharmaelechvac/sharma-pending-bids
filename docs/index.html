@@ -182,11 +182,12 @@ function showList(){
     b.innerHTML = `<h3>${j.project}<span class="badge">${j.status.toUpperCase()}</span></h3>
       <div class="addr">${j.address} · ${j.client}</div>
       <div class="minis">
-        <div class="mini"><b>${j.sf}</b> SF</div>
+        <div class="mini"><b>${j.sf_living}</b> living SF</div>
+        <div class="mini"><b>${j.stories}</b> stories</div>
         <div class="mini"><b>${j.service}</b> service</div>
         <div class="mini"><b>${fmt(j.lights)}</b> lights</div>
         <div class="mini"><b>${fmt(j.outlets)}</b> outlets</div>
-        <div class="mini"><b>${j.switches}</b> switches</div>
+        <div class="mini"><b>${j.appliances}</b> appliances</div>
       </div>
       <div class="stage"><b>Stage:</b> ${j.stage}</div>`;
     b.addEventListener("click", () => showJob(i));
@@ -196,7 +197,7 @@ function showList(){
   const byClient = {};
   DATA.jobs.forEach(j => {
     const c = byClient[j.client] = byClient[j.client] || {jobs:0, sf:0, lights:0, outlets:0, contact:j.contact, names:[]};
-    c.jobs++; c.sf += parseInt(String(j.sf).replace(/[^0-9]/g,""), 10) || 0;
+    c.jobs++; c.sf += parseInt(String(j.sf_living).replace(/[^0-9]/g,""), 10) || 0;
     c.lights += j.lights || 0; c.outlets += j.outlets || 0; c.names.push(j.project);
   });
   const cl = $("clientlist"); cl.innerHTML = "";
@@ -229,16 +230,20 @@ function showJob(i){
     <div style="color:var(--gray)">${j.address}</div>
     <div style="margin-top:4px"><b>Client:</b> ${j.client}<br><b>Contact:</b> ${j.contact}<br><b>Permit:</b> ${j.permit}<br><b>Takeoff:</b> ${j.takeoff_date} · <b>Stage:</b> ${j.stage}</div>
     <div class="tiles">
-      <div class="tile"><div class="n">${j.sf}</div><div class="l">Sq Footage</div></div>
+      <div class="tile"><div class="n">${j.sf_living}</div><div class="l">Living SF</div></div>
+      <div class="tile"><div class="n">${j.sf_roof}</div><div class="l">Under Roof SF</div></div>
+      <div class="tile"><div class="n">${j.stories}</div><div class="l">Stories</div></div>
       <div class="tile"><div class="n">${j.service}</div><div class="l">Service Size</div></div>
       <div class="tile"><div class="n">${fmt(j.lights)}</div><div class="l">Lights</div></div>
       <div class="tile"><div class="n">${fmt(j.outlets)}</div><div class="l">Outlets</div></div>
       <div class="tile"><div class="n">${j.switches}</div><div class="l">Switches</div></div>
       <div class="tile"><div class="n">${j.dimmers}</div><div class="l">Dimmers</div></div>
+      <div class="tile"><div class="n">${j.appliances}</div><div class="l">Appliances</div></div>
     </div>
     <button class="exportbtn" id="exportbtn">⬇ Export PDF bid sheet</button>
     <div class="panel"><h3>Lights — breakdown</h3>${rowsHTML(j.lights_breakdown)}</div>
     <div class="panel"><h3>Outlets — breakdown</h3>${rowsHTML(j.outlets_breakdown)}${j.outlets_note?`<div class="note">${j.outlets_note}</div>`:""}</div>
+    <div class="panel"><h3>Appliances (${j.appliances})</h3>${rowsHTML(j.appliances_list)}</div>
     <div class="panel"><h3>Specialty items</h3>${rowsHTML(spec)}
       <div class="note"><b>Circuits:</b> ${j.circuits}<br><b>Labor:</b> ${j.labor}</div></div>
     <div class="panel"><h3>Good to know</h3>
@@ -272,8 +277,9 @@ function exportPDF(j){
     <div>${j.address}<br><b>Client:</b> ${j.client} · <b>Contact:</b> ${j.contact}<br>
     <b>Permit:</b> ${j.permit} · <b>Trade:</b> ${j.trade} · <b>Status:</b> ${j.status} · <b>Takeoff date:</b> ${j.takeoff_date}</div>
     <h2>Key numbers</h2>
-    ${rowsHTML([["Square footage (conditioned)", j.sf + " SF"],["Service size", j.service],["Lights", fmt(j.lights)],["Outlets", fmt(j.outlets)],["Switches", j.switches],["Dimmers", j.dimmers],["Circuits", j.circuits],["Labor", j.labor]])}
+    ${rowsHTML([["Living square footage", j.sf_living + " SF"],["Under roof square footage", j.sf_roof + " SF"],["Stories", j.stories],["Service size", j.service],["Lights", fmt(j.lights)],["Outlets", fmt(j.outlets)],["Switches", j.switches],["Dimmers", j.dimmers],["Appliances", j.appliances],["Circuits", j.circuits],["Labor", j.labor]])}
     <div style="font-size:10pt;color:#333;margin-top:6px">${j.sf_note} ${j.service_note}</div>
+    <h2>Appliances</h2>${rowsHTML(j.appliances_list)}
     <h2>Lights — breakdown</h2>${rowsHTML(j.lights_breakdown)}
     <h2>Outlets — breakdown</h2>${rowsHTML(j.outlets_breakdown)}
     <h2>Specialty items</h2>${rowsHTML(j.specialty)}
