@@ -1,0 +1,17 @@
+{
+  "name": "Pending Bids",
+  "short_name": "Pending Bids",
+  "description": "Sharma Electric & HVAC — pending bids and first-pass takeoffs",
+  "id": "/sharma-pending-bids/",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#1a2f61",
+  "background_color": "#1a2f61",
+  "icons": [
+    { "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
