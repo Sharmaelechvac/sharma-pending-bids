@@ -222,6 +222,8 @@ function cardFor(j, i){
   const b = document.createElement("button");
   b.className = "card" + (dc === "red" ? " overdue" : dc === "amber" ? " duesoon" : "");
   const n = (j.sheets || []).length;
+  const np = (j.drawings_pdfs || []).length;
+  const drawLabel = (n || np) ? `📐 Drawings (${[n ? n + (n > 1 ? " sheets" : " sheet") : "", np ? np + (np > 1 ? " PDFs" : " PDF") : ""].filter(Boolean).join(" + ")})` : "📐 Drawings — none on file";
   const sub = j.submitted ? `<div class="subblock"><b>Submitted</b> ${j.submitted.date || ""}${j.submitted.how ? ` · ${j.submitted.how}` : ""}${j.submitted.amount ? ` · <b>${j.submitted.amount}</b>` : ""}${j.submitted.proof ? `<br>Proof: ${j.submitted.proof}` : ""}</div>` : "";
   b.innerHTML = `<h3>${j.project}<span class="badge">${(j.status || "Pending").toUpperCase()}</span>${j.label ? `<span class="badge label">${j.label.toUpperCase()}</span>` : ""}</h3>
     <div class="addr">${j.address} · ${j.client}</div>
@@ -237,7 +239,7 @@ function cardFor(j, i){
     ${j.waiting_on ? `<div class="waitline"><b>Waiting on:</b> ${j.waiting_on}</div>` : ""}
     <div class="stage"><b>Stage:</b> ${j.stage}</div>
     ${sub}
-    <span class="drawbtn ${n ? "" : "none"}" data-draw="1">${n ? `📐 Drawings (${n})` : "📐 Drawings — none on file"}</span>
+    <span class="drawbtn ${(n || np) ? "" : "none"}" data-draw="1">${drawLabel}</span>
     <div class="srcline">Source: ${j.source || "—"} · Synced ${j.last_synced || "—"}</div>`;
   b.addEventListener("click", e => {
     const toDraw = !!e.target.closest("[data-draw]");
@@ -303,6 +305,26 @@ function showList(){
 function rowsHTML(pairs){
   return "<table>" + pairs.map(p => `<tr><td>${p[0]}</td><td>${p[1]}</td></tr>`).join("") + "</table>";
 }
+function openPdfDataUri(uri){
+  const b64 = String(uri).split(",").pop();
+  const bin = atob(b64); const arr = new Uint8Array(bin.length);
+  for(let k = 0; k < bin.length; k++) arr[k] = bin.charCodeAt(k);
+  const url = URL.createObjectURL(new Blob([arr], { type: "application/pdf" }));
+  window.open(url, "_blank");
+}
+const packCache = {};
+async function loadDrawingsPack(path){
+  if(packCache[path]) return packCache[path];
+  const code = sessionStorage.getItem("pb_code");
+  const res = await fetch(path, { cache: "no-store" });
+  if(!res.ok) throw new Error("fetch failed");
+  const env = await res.json();
+  const key = await deriveKey(code, b64d(env.salt), env.iterations);
+  const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64d(env.iv) }, key, b64d(env.ciphertext));
+  const pack = JSON.parse(new TextDecoder().decode(plain));
+  packCache[path] = pack;
+  return pack;
+}
 function showJob(i){
   const j = DATA.jobs[i]; CURRENT = j;
   $("listview").style.display = "none";
@@ -345,7 +367,7 @@ function showJob(i){
       <ul class="clean">${j.open_questions.map(q => `<li>${q}</li>`).join("")}</ul></div>
     <div class="panel" id="drawingspanel"><h3>Drawings</h3><div id="sheetbox"></div></div>`;
   const sb = $("sheetbox");
-  if(!(j.sheets || []).length){
+  if(!(j.sheets || []).length && !(j.drawings_pdfs || []).length){
     sb.innerHTML = `<div class="note" style="margin-top:0">${j.drawings_note || "No drawings on file."}</div>`;
   }
   (j.sheets || []).forEach(s => {
@@ -355,13 +377,7 @@ function showJob(i){
       const btn = document.createElement("button");
       btn.className = "drawbtn"; btn.style.marginTop = "2px";
       btn.textContent = "📄 Open PDF — " + s.label;
-      btn.addEventListener("click", () => {
-        const b64 = String(s.pdf).split(",").pop();
-        const bin = atob(b64); const arr = new Uint8Array(bin.length);
-        for(let k = 0; k < bin.length; k++) arr[k] = bin.charCodeAt(k);
-        const url = URL.createObjectURL(new Blob([arr], { type: "application/pdf" }));
-        window.open(url, "_blank");
-      });
+      btn.addEventListener("click", () => openPdfDataUri(s.pdf));
       sb.appendChild(btn);
     } else if(s.img){
       const img = document.createElement("img"); img.className = "sheetimg"; img.src = s.img; img.alt = s.label;
@@ -369,6 +385,30 @@ function showJob(i){
       sb.appendChild(img);
     }
   });
+  if((j.drawings_pdfs || []).length){
+    const lbl = document.createElement("div"); lbl.className = "sheetlbl";
+    lbl.textContent = "Full plan sets — PDF (tap to open)";
+    sb.appendChild(lbl);
+    j.drawings_pdfs.forEach(p => {
+      const btn = document.createElement("button");
+      btn.className = "drawbtn"; btn.style.marginTop = "2px"; btn.style.display = "block";
+      btn.textContent = `📄 ${p.name} (${p.size_mb} MB)`;
+      btn.addEventListener("click", async () => {
+        if(btn.dataset.busy) return;
+        btn.dataset.busy = "1";
+        const orig = btn.textContent;
+        btn.textContent = `⏳ Loading (${p.size_mb} MB)…`;
+        try{
+          const pack = await loadDrawingsPack(p.pack);
+          const f = pack.files.find(x => x.file === p.file) || pack.files[0];
+          openPdfDataUri(f.pdf);
+          btn.textContent = orig;
+        }catch(e){ btn.textContent = "⚠ Couldn't load — tap to retry"; }
+        delete btn.dataset.busy;
+      });
+      sb.appendChild(btn);
+    });
+  }
   $("exportbtn").addEventListener("click", () => exportPDF(j));
 }
 $("backbtn").addEventListener("click", showList);
