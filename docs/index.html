@@ -60,6 +60,20 @@ main{max-width:900px; margin:0 auto; padding:16px 14px 40px;}
 .badge{display:inline-block; background:var(--gold); color:#231a04; font-weight:700; font-size:.75rem; border-radius:6px; padding:3px 8px; vertical-align:middle; margin-left:8px;}
 .stage{margin-top:10px; font-size:.9rem; color:var(--ink);}
 .stage b{color:var(--navy);}
+.card.overdue{border-left-color:#b3261e;}
+.card.duesoon{border-left-color:#e07b00;}
+.due{margin-top:8px; font-size:.95rem; font-weight:600; color:var(--dnavy);}
+.due.red{color:#b3261e;}
+.due.amber{color:#9a6200;}
+.waitline{margin-top:4px; font-size:.92rem;}
+.waitline b{color:var(--navy);}
+.srcline{margin-top:8px; font-size:.8rem; color:var(--gray);}
+.drawbtn{display:inline-block; margin-top:12px; background:var(--navy); color:#fff; border-radius:10px; padding:11px 16px; font-weight:600; font-size:.95rem; line-height:1.2;}
+.drawbtn.none{background:var(--page); color:var(--gray); border:1px solid var(--line);}
+.badge.label{background:var(--navy); color:#fff;}
+.subblock{margin-top:10px; background:#eef7ee; border:1px solid #bfe3bf; border-radius:10px; padding:9px 12px; font-size:.92rem;}
+details.closedwrap summary{cursor:pointer; list-style:none;}
+.empty-note{color:var(--gray); font-size:.92rem; padding:2px 2px 12px;}
 /* ---------- clients ---------- */
 .client{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px; margin:0 0 12px;}
 .client h3{font-size:1.25rem; color:var(--dnavy);}
@@ -131,8 +145,16 @@ footer{color:var(--gray); font-size:.8rem; text-align:center; padding:18px 10px 
 
   <!-- LIST -->
   <div id="listview" style="display:none">
-    <div class="secttl">Pending bids</div>
-    <div id="joblist"></div>
+    <div class="secttl">Due soon — open by due date</div>
+    <div id="sec-open"></div>
+    <div class="secttl" id="sec-waiting-ttl">Waiting on Sanjay</div>
+    <div id="sec-waiting"></div>
+    <div class="secttl" id="sec-submitted-ttl" style="display:none">Submitted</div>
+    <div id="sec-submitted"></div>
+    <details class="closedwrap" id="sec-closed-wrap" style="display:none">
+      <summary class="secttl">Won / Lost / Passed ▾</summary>
+      <div id="sec-closed"></div>
+    </details>
     <div class="secttl">Clients &amp; volume of work</div>
     <div id="clientlist"></div>
     <div class="poweredby">Powered by <span class="pbpill"><img src="assets/sharma360-logo.png" alt="SHARMA360"></span></div>
@@ -187,32 +209,77 @@ $("refreshbtn").addEventListener("click", () => location.reload());
 $("lockbtn").addEventListener("click", () => { sessionStorage.removeItem("pb_code"); location.reload(); });
 
 function fmt(n){ return typeof n === "number" ? n.toLocaleString("en-US") : n; }
+function dueClass(j){
+  if(!j.due_et) return "";
+  const t = new Date(j.due_et).getTime(), now = Date.now();
+  if(isNaN(t)) return "";
+  if(t < now) return "red";
+  if(t - now <= 3 * 24 * 3600 * 1000) return "amber";
+  return "";
+}
+function cardFor(j, i){
+  const dc = dueClass(j);
+  const b = document.createElement("button");
+  b.className = "card" + (dc === "red" ? " overdue" : dc === "amber" ? " duesoon" : "");
+  const n = (j.sheets || []).length;
+  const sub = j.submitted ? `<div class="subblock"><b>Submitted</b> ${j.submitted.date || ""}${j.submitted.how ? ` · ${j.submitted.how}` : ""}${j.submitted.amount ? ` · <b>${j.submitted.amount}</b>` : ""}${j.submitted.proof ? `<br>Proof: ${j.submitted.proof}` : ""}</div>` : "";
+  b.innerHTML = `<h3>${j.project}<span class="badge">${(j.status || "Pending").toUpperCase()}</span>${j.label ? `<span class="badge label">${j.label.toUpperCase()}</span>` : ""}</h3>
+    <div class="addr">${j.address} · ${j.client}</div>
+    <div class="minis">
+      <div class="mini"><b>${j.sf_living}</b> living SF</div>
+      <div class="mini"><b>${j.stories}</b> stories</div>
+      <div class="mini"><b>${j.service}</b> service</div>
+      <div class="mini"><b>${fmt(j.lights)}</b> lights</div>
+      <div class="mini"><b>${fmt(j.outlets)}</b> outlets</div>
+      <div class="mini"><b>${j.appliances}</b> appliances</div>
+    </div>
+    ${j.due_label ? `<div class="due ${dc}">Due: ${j.due_label}</div>` : ""}
+    ${j.waiting_on ? `<div class="waitline"><b>Waiting on:</b> ${j.waiting_on}</div>` : ""}
+    <div class="stage"><b>Stage:</b> ${j.stage}</div>
+    ${sub}
+    <span class="drawbtn ${n ? "" : "none"}" data-draw="1">${n ? `📐 Drawings (${n})` : "📐 Drawings — none on file"}</span>
+    <div class="srcline">Source: ${j.source || "—"} · Synced ${j.last_synced || "—"}</div>`;
+  b.addEventListener("click", e => {
+    const toDraw = !!e.target.closest("[data-draw]");
+    showJob(i);
+    if(toDraw){
+      const p = document.getElementById("drawingspanel");
+      if(p) p.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  });
+  return b;
+}
 function showList(){
   $("lock").style.display = "none";
   $("detailview").style.display = "none";
   $("listview").style.display = "block";
   $("lockbtn").style.display = "block";
-  const jl = $("joblist"); jl.innerHTML = "";
+  const closedSt = ["Won", "Lost", "Passed", "Declined"];
+  const groups = { open: [], waiting: [], submitted: [], closed: [] };
   DATA.jobs.forEach((j, i) => {
-    const b = document.createElement("button");
-    b.className = "card";
-    b.innerHTML = `<h3>${j.project}<span class="badge">${j.status.toUpperCase()}</span></h3>
-      <div class="addr">${j.address} · ${j.client}</div>
-      <div class="minis">
-        <div class="mini"><b>${j.sf_living}</b> living SF</div>
-        <div class="mini"><b>${j.stories}</b> stories</div>
-        <div class="mini"><b>${j.service}</b> service</div>
-        <div class="mini"><b>${fmt(j.lights)}</b> lights</div>
-        <div class="mini"><b>${fmt(j.outlets)}</b> outlets</div>
-        <div class="mini"><b>${j.appliances}</b> appliances</div>
-      </div>
-      <div class="stage"><b>Stage:</b> ${j.stage}</div>`;
-    b.addEventListener("click", () => showJob(i));
-    jl.appendChild(b);
+    const item = { j, i };
+    if(closedSt.includes(j.status)) groups.closed.push(item);
+    else if(j.submitted || j.status === "Submitted") groups.submitted.push(item);
+    else if((j.waiting_on || "").startsWith("Sanjay")) groups.waiting.push(item);
+    else groups.open.push(item);
   });
-  // Clients & volume
+  const byDue = (a, b) => (a.j.due_et || "9999").localeCompare(b.j.due_et || "9999");
+  groups.open.sort(byDue); groups.waiting.sort(byDue);
+  const fill = (id, items, emptyMsg) => {
+    const el = $(id); el.innerHTML = "";
+    if(!items.length && emptyMsg) el.innerHTML = `<div class="empty-note">${emptyMsg}</div>`;
+    items.forEach(({ j, i }) => el.appendChild(cardFor(j, i)));
+  };
+  fill("sec-open", groups.open, "Nothing open right now.");
+  fill("sec-waiting", groups.waiting, "");
+  $("sec-waiting-ttl").style.display = groups.waiting.length ? "" : "none";
+  fill("sec-submitted", groups.submitted, "");
+  $("sec-submitted-ttl").style.display = groups.submitted.length ? "" : "none";
+  fill("sec-closed", groups.closed, "");
+  $("sec-closed-wrap").style.display = groups.closed.length ? "" : "none";
+  // Clients & volume (open + waiting + submitted; closed bids drop out)
   const byClient = {};
-  DATA.jobs.forEach(j => {
+  DATA.jobs.filter(j => !["Won", "Lost", "Passed", "Declined"].includes(j.status)).forEach(j => {
     const c = byClient[j.client] = byClient[j.client] || {jobs:0, sf:0, lights:0, outlets:0, contact:j.contact, names:[], logo:j.client_logo || ""};
     c.jobs++; c.sf += parseInt(String(j.sf_living).replace(/[^0-9]/g,""), 10) || 0;
     c.lights += j.lights || 0; c.outlets += parseInt(String(j.outlets), 10) || 0; c.names.push(j.project);
@@ -259,7 +326,10 @@ function showJob(i){
       <div class="tile"><div class="n">${j.appliances}</div><div class="l">Appliances</div></div>
     </div>
     <button class="exportbtn" id="exportbtn">⬇ Export PDF bid sheet</button>
-    <div class="panel" style="border-left:6px solid var(--gold)"><h3>Special notes — for bidding</h3>
+    <div class="panel" style="border-left:6px solid var(--gold)"><h3>Bid status</h3>
+      ${rowsHTML([["Status", j.status + (j.label ? ` · ${j.label}` : "")], ["Due", j.due_label || "—"], ["Waiting on", j.waiting_on || "—"], ["Source", j.source || "—"], ["Last synced", j.last_synced || "—"]])}
+      ${j.submitted ? `<div class="subblock"><b>Submitted</b> ${j.submitted.date || ""}${j.submitted.how ? ` · ${j.submitted.how}` : ""}${j.submitted.amount ? ` · <b>${j.submitted.amount}</b>` : ""}${j.submitted.proof ? `<br>Proof: ${j.submitted.proof}` : ""}</div>` : ""}</div>
+    <div class="panel"><h3>Special notes — for bidding</h3>
       <ul class="clean">${(j.special_notes||[]).map(n => `<li>${n}</li>`).join("")}</ul></div>
     <div class="panel"><h3>Lights — breakdown</h3>${rowsHTML(j.lights_breakdown)}</div>
     <div class="panel"><h3>Outlets — breakdown</h3>${rowsHTML(j.outlets_breakdown)}${j.outlets_note?`<div class="note">${j.outlets_note}</div>`:""}</div>
@@ -273,13 +343,31 @@ function showJob(i){
       <ul class="clean">${j.notes.map(n => `<li>${n}</li>`).join("")}</ul></div>
     <div class="panel"><h3>Open questions (${j.open_questions.length})</h3>
       <ul class="clean">${j.open_questions.map(q => `<li>${q}</li>`).join("")}</ul></div>
-    <div class="panel"><h3>Drawings</h3><div id="sheetbox"></div></div>`;
+    <div class="panel" id="drawingspanel"><h3>Drawings</h3><div id="sheetbox"></div></div>`;
   const sb = $("sheetbox");
-  j.sheets.forEach(s => {
+  if(!(j.sheets || []).length){
+    sb.innerHTML = `<div class="note" style="margin-top:0">${j.drawings_note || "No drawings on file."}</div>`;
+  }
+  (j.sheets || []).forEach(s => {
     const lbl = document.createElement("div"); lbl.className = "sheetlbl"; lbl.textContent = s.label;
-    const img = document.createElement("img"); img.className = "sheetimg"; img.src = s.img; img.alt = s.label;
-    img.addEventListener("click", () => { $("ovlimg").src = s.img; $("ovl").style.display = "block"; });
-    sb.appendChild(lbl); sb.appendChild(img);
+    sb.appendChild(lbl);
+    if(s.pdf){
+      const btn = document.createElement("button");
+      btn.className = "drawbtn"; btn.style.marginTop = "2px";
+      btn.textContent = "📄 Open PDF — " + s.label;
+      btn.addEventListener("click", () => {
+        const b64 = String(s.pdf).split(",").pop();
+        const bin = atob(b64); const arr = new Uint8Array(bin.length);
+        for(let k = 0; k < bin.length; k++) arr[k] = bin.charCodeAt(k);
+        const url = URL.createObjectURL(new Blob([arr], { type: "application/pdf" }));
+        window.open(url, "_blank");
+      });
+      sb.appendChild(btn);
+    } else if(s.img){
+      const img = document.createElement("img"); img.className = "sheetimg"; img.src = s.img; img.alt = s.label;
+      img.addEventListener("click", () => { $("ovlimg").src = s.img; $("ovl").style.display = "block"; });
+      sb.appendChild(img);
+    }
   });
   $("exportbtn").addEventListener("click", () => exportPDF(j));
 }
@@ -299,7 +387,8 @@ function exportPDF(j){
     </div>
     <h2 style="margin-top:2px">BID SHEET — ${j.project}</h2>
     <div>${j.address}<br><b>Client:</b> ${j.client} · <b>Contact:</b> ${j.contact}<br>
-    <b>Permit:</b> ${j.permit} · <b>Trade:</b> ${j.trade} · <b>Status:</b> ${j.status} · <b>Takeoff date:</b> ${j.takeoff_date}</div>
+    <b>Permit:</b> ${j.permit} · <b>Trade:</b> ${j.trade} · <b>Status:</b> ${j.status} · <b>Takeoff date:</b> ${j.takeoff_date}<br>
+    <b>Due:</b> ${j.due_label || "—"} · <b>Waiting on:</b> ${j.waiting_on || "—"} · <b>Source:</b> ${j.source || "—"}</div>
     <h2>Key numbers</h2>
     ${rowsHTML([["Living square footage", j.sf_living + " SF"],["Under roof square footage", j.sf_roof + " SF"],["Stories", j.stories],["Service size", j.service],["Lights", fmt(j.lights)],["Outlets", fmt(j.outlets)],["Switches", j.switches],["Dimmers", j.dimmers],["Appliances", j.appliances],["Circuits", j.circuits],["Labor", j.labor]])}
     <div style="font-size:10pt;color:#333;margin-top:6px">${j.sf_note} ${j.service_note}</div>
@@ -310,7 +399,8 @@ function exportPDF(j){
     <h2>Specialty items</h2>${rowsHTML(j.specialty)}
     <h2>Notes</h2><ul>${j.notes.map(n => `<li>${n}</li>`).join("")}</ul>
     <h2>Open questions</h2><ul>${j.open_questions.map(q => `<li>${q}</li>`).join("")}</ul>
-    ${j.sheets.map(s => `<div class="drawpage"><h2>${s.label}</h2><img src="${s.img}"></div>`).join("")}
+    ${(j.sheets || []).filter(s => s.img).map(s => `<div class="drawpage"><h2>${s.label}</h2><img src="${s.img}"></div>`).join("")}
+    ${(j.sheets || []).some(s => s.pdf) ? `<div style="margin-top:10px;font-size:10pt">PDF plan sets are attached in the app (Drawings) and are not printed on this sheet.</div>` : ""}
     <div style="margin-top:16px;font-size:10pt;color:#333">First-pass takeoff — counts from the approved plan set listed above. No prices on this sheet.</div>`;
   window.print();
 }
