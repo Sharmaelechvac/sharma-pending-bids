@@ -1,6 +1,6 @@
 /* Pending Bids service worker — network-first so bid data is always fresh;
    the cached shell is only an offline fallback. */
-const CACHE = 'pending-bids-shell-v1';
+const CACHE = 'pending-bids-shell-v2';
 const SHELL = ['./', './index.html', './manifest.webmanifest',
   './assets/icon-192.png', './assets/icon-512.png',
   './assets/icon-maskable-512.png', './assets/apple-touch-icon.png',
