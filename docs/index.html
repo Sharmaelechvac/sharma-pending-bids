@@ -342,8 +342,10 @@ async function loadDrawingsPack(path){
   const res = await fetch(path, { cache: "no-store" });
   if(!res.ok) throw new Error("fetch failed");
   const env = await res.json();
-  const key = await deriveKey(code, b64d(env.salt), env.iterations);
-  const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64d(env.iv) }, key, b64d(env.ciphertext));
+  const key = await deriveKey(code, env.salt, env.iterations);
+  const iv = Uint8Array.from(atob(env.iv), c => c.charCodeAt(0));
+  const ct = Uint8Array.from(atob(env.ciphertext), c => c.charCodeAt(0));
+  const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, ct);
   const pack = JSON.parse(new TextDecoder().decode(plain));
   packCache[path] = pack;
   return pack;
